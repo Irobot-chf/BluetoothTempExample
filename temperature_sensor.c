@@ -62,8 +62,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "uart_handler.h"
 #include "dialog14580.h"
 
-#include "sps_device_580.h"
-//#include "sps_device_dialog.h"
+//#include "sps_device_580.h"
+#include "sps_device_dialog.h"
 //#include "BLE_code_beacon.h"
 
 typedef enum
@@ -79,47 +79,6 @@ typedef enum
 } ADSENSORAPP_RESULT_TYPE;
 
 uint8_t BootResult = 0;
-
-/**
-*********************************************************************************************************************************
-*    SHT25 Definitions                                                                                                          *
-********************************************************************************************************************************/
-#define SHT25_DEV_ADDR	        	        	0x40	//Current Sensirion Device Addr =0x40
-
-#define RH_MEAS_CONST                           (-6)
-#define T_MEAS_CONST                            (-46.85)
-#define RH_MEAS_MULT_CONST12                    0.03051 // (125/2^RES); RES=12-bit for RH
-#define T_MEAS_MULT_CONST14                     0.01054 // (172.72/2^RES); RES=14-bit for Temp
-#define SHT25_I2C_WRITE_ADDR	                0x80	// (SHT25_DEV_ADDR<<1)|0
-#define SHT25_I2C_READ_ADDR	                	0x81	// (SHT25_DEV_ADDR<<1)|1
-
-#define SHT25_Delay		                		0x1F //0x1FFF  //how much?????????????
-
-/* SHT25_Sensor Register Address Definitions	*/
-#define SHT25_TRIG_T_MEAS_HOLDMASTER		0xE3
-#define SHT25_TRIG_RH_MEAS_HOLDMASTER		0xE5
-#define SHT25_WRITE_USER_REGISTER	        0xE6
-#define SHT25_READ_USER_REGISTER	        0xE7
-#define SHT25_TRIG_T_MEAS_NO_HOLDMASTER		0xF3	//POLL MODE
-#define SHT25_TRIG_RH_MEAS_NO_HOLDMASTER    0xF5	//POLL MODE
-#define SHT25_SOFT_RESET_REGISTER	        0xFE
-
-/* ==================================================== */
-/*						MAX44009						*/
-/* ==================================================== */
-#define MAX44009_DEV_ADDR			0x4A		//0x4B
-
-#define MAX44009_INT_STATUS			0x00		//Interrupt Status
-#define MAX44009_INT_ENABLE			0x01		//Interrupt Enable
-#define MAX44009_CONFIG				0x02		//Configuration
-#define MAX44009_LUX_HIGH			0x03		//Lux Reading High
-#define MAX44009_LUX_LOW			0x04		//Lux Reading Low
-#define MAX44009_UPPER_THRESHOLD	0x05		//Lux Reading High
-#define MAX44009_LOWER_THRESHOLD	0x06		//Lux Reading High
-#define MAX44009_THRESHOLD_TIMER	0x07		//Lux Reading High
-
-#define MAX44009_LUX_LSB_VALUE      0.045 		//LSB = 0.045Lux
-
 
 /* Handle for UART device */
 #pragma data_alignment=4
@@ -150,12 +109,12 @@ float   SHT25[2];
 float   MAX44009;
 
 unsigned char 	RxBuffer[];
-unsigned char   BLE_Payload[14];
+char   BLE_Payload[14];
 unsigned long   Msg_Count = 0;
 
 unsigned char   BLE_UID[20] = {0x00, 0xEE, 0xAD, 0x14, 0x51, 0xDE, 0x21, 0xD8, 0x91, 0x67, 0x8A, 0xCF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x00, 0x00};
 
-#define BLE_CODE_SIZE 10740
+//#define BLE_CODE_SIZE 10740
 //#define BLE_CODE_SIZE 11820      //Beacon 
 //#define BLE_CODE_SIZE 20860        //Paired
 
@@ -243,12 +202,12 @@ void PRINT_C(char* string, int len) {
 
 void Print_SensData_on_UART()
 {
-    char buffer [8];
+    /*char buffer [8];
     char crlf[2] = {0x0A, 0x0D};
     char *testbuff;
     static int i=0;
 
-    /*ftoa(MAX44009, &buffer[0]);
+    ftoa(MAX44009, &buffer[0]);
     PRINT_C("MAX44009: ");
     PRINT_C(buffer);        
     
@@ -263,75 +222,6 @@ void Print_SensData_on_UART()
 
 }
 
-
-/*!
-* @brief        Generic data read routine for an I2C based sensors.
-*
-* @param[in]    DevAddr         I2C Device address of the sensor.
-* @param[in]    RegAddr         Address of the register (of the sensor) from which the data has to be read.
-* @param[in]    Numbytes        Number of bytes to read.
-* @param[in]    *Data           Pointer to read data.
-* @param[out]   NULL
-*
-* @return       status
-*                    - #ADI_ADS_API_SUCCESS                            On successfully reading a byte
-*                    - #ADI_ADS_API_FAIL                               On failed to read a byte
-* @sa           adi_I2C_MasterReceive()
-* @note         Reads \a Numbytes (to a byte pointed by \a *data) from register (address specified by \a RegAddr) of sensor (specified by \a DevAddr) over I2C bus.
-                \a DevAddr holds the device address of the particular sensor.
-                \a RegAddr is the address of the register (mostly 8-bit width) of sensor from which the user wants to read.
-                The \a data is the pointer points to the received data.
-*/
-ADSENSORAPP_RESULT_TYPE adsAPI_RW_I2C_Sensor_Reg(REG_RW_MODE rw, uint8_t DevAddr, uint8_t RegAddr, uint8_t *Data, uint8_t Numbytes, uint8_t RepeatStart)
-{
-    ADI_I2C_RESULT eResult=ADI_I2C_SUCCESS;
-
-	/* Set hardware address width */
-	eResult = adi_i2c_SetHWAddressWidth(masterDev, ADI_I2C_HWADDR_WIDTH_7_BITS);
-	/* set EEPROM slave address */
-	eResult = adi_i2c_SetHardwareAddress(masterDev, DevAddr);
-	adsAPI_Delay(0x100);
-	if (rw == REG_READ)
-	{
-            uint8_t TxD[1]={0}, RxD[4]={0};
-            TxD[0]=RegAddr;
-            void* pBuffer;
-
-            if(ADI_I2C_SUCCESS != (eResult = adi_i2c_SubmitTxBuffer(masterDev, &TxD[0], 1u, RepeatStart)))		//1u, true
-                    return ADI_ADS_API_FAIL;
-
-
-            if(ADI_I2C_SUCCESS != (eResult = adi_i2c_SubmitRxBuffer(masterDev, &RxD[0], Numbytes, RepeatStart)))	//false
-                    return ADI_ADS_API_FAIL;
-
-            if (ADI_I2C_SUCCESS != (eResult = adi_i2c_Enable(masterDev, true)))
-                    return ADI_ADS_API_FAIL;
-
-            if (ADI_I2C_SUCCESS != (eResult = adi_i2c_GetTxBuffer(masterDev, &pBuffer)))
-                    return ADI_ADS_API_FAIL;
-
-            if (ADI_I2C_SUCCESS != (eResult = adi_i2c_GetRxBuffer(masterDev, &pBuffer)))
-                    return ADI_ADS_API_FAIL;
-
-            if (ADI_I2C_SUCCESS != (eResult = adi_i2c_Enable(masterDev, false)))
-                    return ADI_ADS_API_FAIL;
-
-            *Data = RxD[0];
-	}
-	else
-	{
-		uint8_t write_buff [256];				//temporary support
-		write_buff[0] = RegAddr;				// Start Register Address
-
-		/* copy data to local buffer*/
-		memcpy(&write_buff[1], Data, Numbytes);
-		eResult = adi_i2c_Write(masterDev, write_buff, Numbytes+1);
-	}
-    if (eResult == ADI_I2C_SUCCESS)
-      return ADI_ADS_API_SUCCESS;
-    else
-      return ADI_ADS_API_FAIL;
-}
 
 /*
  * Read a ADT7420 register value
@@ -388,27 +278,20 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
  int main(void)
 {
     ADI_I2C_RESULT eResult=ADI_I2C_SUCCESS;
+    uint8_t DevID;
+    uint8_t t_msb, t_lsb;
+    int16_t Temp;
+    float ctemp, ftemp;
     uint8_t deviceMemory[ADI_I2C_MEMORY_SIZE];
-    
     
     /* Clock initialization */
     SystemInit();
     
+    //TODO:What does this do? GPIO = Bluetooth?
     adi_gpio_OutputEnable(ADI_GPIO_PORT0, (ADI_GPIO_PIN_4 | ADI_GPIO_PIN_5), true);
-    
-    volatile int i, j, k;
-    for(i = 0;i < 250;i++)
-        {
-          for(j = 0;j < 25;j++)
-          {
-            for(k = 0;k < 2;k++)
-            {
-               k++;
-               k--;
-            }
-          }
-        }
 
+    //TODO: Possible Delay?
+    
     adi_initpinmux();
     
     /* test system initialization */
@@ -417,7 +300,7 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     if(adi_pwr_Init()!= ADI_PWR_SUCCESS)
     {
         DEBUG_MESSAGE("\n Failed to intialize the power service \n");
-        //eResult = ADI_I2C_FAILURE; 
+        eResult = ADI_I2C_FAILURE; 
     }
     
     if(ADI_PWR_SUCCESS != adi_pwr_SetClockDivider(ADI_CLOCK_HCLK,1))
@@ -437,7 +320,11 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     adi_gpio_OutputEnable(ADI_GPIO_PORT2,ADI_GPIO_PIN_6,true);
     
     /////////////////////////////////////////////////////////////////////////
-    BootResult = adi_Dialog14580_SPI_Boot(sps_device_580_bin,IMAGE_SIZE);
+    ///////////////////////////////BOOT BLE MODULE///////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    //TODO:Boot of BLE is failing
+    BootResult = adi_Dialog14580_SPI_Boot(sps_device_dialog_bin,IMAGE_SIZE);
+    DEBUG_MESSAGE("Dialog14580 failed to boot\n", BootResult, 0);
     //BootResult = adi_Dialog14580_SPI_Boot(ble_code_ptr,BLE_CODE_SIZE);
     
     adi_gpio_OutputEnable(ADI_GPIO_PORT2,ADI_GPIO_PIN_4,true);
@@ -463,7 +350,7 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     DEBUG_RESULT("adi_i2c_SetHWAddressWidth failed\n",eResult,ADI_I2C_SUCCESS);
 
     /* set ADT7420 slave address */
-    eResult = adi_i2c_SetHardwareAddress(masterDev, TARGETADDR/*0x40*/);
+    eResult = adi_i2c_SetHardwareAddress(masterDev, TARGETADDR);
     DEBUG_RESULT("adi_i2c_SetHardwareAddress failed\n",eResult,ADI_I2C_SUCCESS);
     
 
@@ -477,13 +364,39 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     while(1)
     {
 
-    eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, SHT25_DEV_ADDR, SHT25_TRIG_T_MEAS_HOLDMASTER, &Data[0], 2, 0); //stuck here
+      DevID = 0u;
+      eResult = ReadRegister(ID_REG, &DevID);
+      DEBUG_RESULT("Failed to read ID register",eResult,ADI_I2C_SUCCESS);
+      
+      DEBUG_MESSAGE("ADT7420 Manufacture ID: 0x%x\n", DevID, TEST_VALUE);
+      
+    //eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, SHT25_DEV_ADDR, SHT25_TRIG_T_MEAS_HOLDMASTER, &Data[0], 2, 0); //stuck here
+    //DEBUG_RESULT("Reading temperature MSB register failed",eResult,ADI_I2C_SUCCESS);
     
-    DEBUG_RESULT("Reading temperature MSB register failed",eResult,ADI_I2C_SUCCESS);
-    
-    val = (Data[0]<<8) | Data[1];
-    val = val >> 2;
-    SHT25[0] = (float) (T_MEAS_CONST + (T_MEAS_MULT_CONST14 * val));   //Temparature = (-46.85+176.72*St/2^RES)
+      /* Read the temperature MSB register */
+        eResult = ReadRegister(TEMPREG_MSB, &t_msb);
+        DEBUG_RESULT("Reading temperature MSB register failed",eResult,ADI_I2C_SUCCESS);
+        
+        /* Read the temperature LSB register */
+        eResult = ReadRegister(TEMPREG_LSB, &t_lsb);
+        DEBUG_RESULT("Reading temperature LSB register failed",eResult,ADI_I2C_SUCCESS);
+        
+        /* Get the temperature by discarding the 3 bit flag at the LSB */
+        Temp = ((int16_t)((uint16_t)t_msb << 8u) | (uint16_t)t_lsb) >> 3u;
+        
+        
+        /* convert raw to deg C */
+        ctemp = (Temp * 1.0)/16.0;
+
+        /* convert raw to deg F */
+        ftemp = ctemp * (9.0/5.0) + 32.0;
+        
+        DEBUG_MESSAGE("Temperature: %5.1f deg C\n",ctemp);
+        DEBUG_MESSAGE("Temperature: %5.1f deg F\n",ftemp);
+        
+//    val = (Data[0]<<8) | Data[1];
+//    val = val >> 2;
+//    SHT25[0] = (float) (T_MEAS_CONST + (T_MEAS_MULT_CONST14 * val));   //Temparature = (-46.85+176.72*St/2^RES)
     
     /* SHT21 Temperature to BLE Payload */
     BLE_Payload[4]  = Data[0];
@@ -492,32 +405,32 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     adsAPI_Delay(ADI_Sensor_Delay);
     
    
-    //eResult = ReadRegister(0xE5, &Data[0]);
-    eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, SHT25_DEV_ADDR, SHT25_TRIG_RH_MEAS_HOLDMASTER, &Data[0], 2, 0);
-    DEBUG_RESULT("Reading temperature LSB register failed",eResult,ADI_I2C_SUCCESS);
-    
-    val = (Data[0]<<8) | Data[1];
-    val = val >> 4;
-    SHT25[1] = (float) (RH_MEAS_CONST + (RH_MEAS_MULT_CONST12 * val));   //Relative Humidity = (-6 + 125*RHval/2^RES)
-    
-    /* SHT21 Humidity to BLE Payload */
-    BLE_Payload[2]  = Data[0];
-    BLE_Payload[3]  = Data[1];
-      
-    uint8_t Data[2]={0};
-    uint8_t exp=0, mant=0;
-
-    eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, MAX44009_DEV_ADDR, MAX44009_LUX_HIGH, &Data[0], 2, 0);
-    exp = (Data[0] & 0xF0)>>4;
-    mant = (Data[0]<<4) | (Data[1] & 0x0F);
-    
-    /* MAX44009 Ambient Light to BLE Payload */
-    BLE_Payload[6]  = Data[0];
-    BLE_Payload[7]  = Data[1];
-
-    uint8_t exp_val=2;
-    for(uint8_t i=exp; i>0; i--) exp_val*=2;
-    MAX44009 = (float) (exp_val * mant* MAX44009_LUX_LSB_VALUE);
+    ////eResult = ReadRegister(0xE5, &Data[0]);
+    //eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, SHT25_DEV_ADDR, SHT25_TRIG_RH_MEAS_HOLDMASTER, &Data[0], 2, 0);
+    //DEBUG_RESULT("Reading temperature LSB register failed",eResult,ADI_I2C_SUCCESS);
+    //
+    //val = (Data[0]<<8) | Data[1];
+    //val = val >> 4;
+    //SHT25[1] = (float) (RH_MEAS_CONST + (RH_MEAS_MULT_CONST12 * val));   //Relative Humidity = (-6 + 125*RHval/2^RES)
+    //
+    ///* SHT21 Humidity to BLE Payload */
+    //BLE_Payload[2]  = Data[0];
+    //BLE_Payload[3]  = Data[1];
+    //  
+    //uint8_t Data[2]={0};
+    //uint8_t exp=0, mant=0;
+    //
+    //eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, MAX44009_DEV_ADDR, MAX44009_LUX_HIGH, &Data[0], 2, 0);
+    //exp = (Data[0] & 0xF0)>>4;
+    //mant = (Data[0]<<4) | (Data[1] & 0x0F);
+    //
+    ///* MAX44009 Ambient Light to BLE Payload */
+    //BLE_Payload[6]  = Data[0];
+    //BLE_Payload[7]  = Data[1];
+    //
+    //uint8_t exp_val=2;
+    //for(uint8_t i=exp; i>0; i--) exp_val*=2;
+    //MAX44009 = (float) (exp_val * mant* MAX44009_LUX_LSB_VALUE);
     
     /* Nothing to be written to Ambient Light CH1 in BLE Payload */
     BLE_Payload[8]  = 0;

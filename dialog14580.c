@@ -137,7 +137,7 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
   adi_gpio_SetLow(BLE_RST_PORT,BLE_RST_PIN);
   
   //Add wait 110ms here to improve efficiency.
-  Delay_ms(100);
+  Delay_ms(110);
   
   //Boot Dialog
   do{
