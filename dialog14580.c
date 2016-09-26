@@ -116,7 +116,7 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
   uint32_t attempt = 0;
   
     //Configure pin to reset Dialog
-  if(adi_gpio_SetLow(BLE_RST_PORT,BLE_RST_PIN) !=0)
+  if(adi_gpio_SetLow(BLE_RST_PORT, BLE_RST_PIN) !=0)
     return 9;
   if(adi_gpio_OutputEnable(BLE_RST_PORT,BLE_RST_PIN,true) !=0)
     return 9;

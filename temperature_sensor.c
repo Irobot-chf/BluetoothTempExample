@@ -317,7 +317,8 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     {
     }
     
-    adi_gpio_OutputEnable(ADI_GPIO_PORT2,ADI_GPIO_PIN_6,true);
+    adi_gpio_OutputEnable(BLE_RST_PORT, BLE_RST_PIN, true); //port 2 = BLE RST PORT, pin 4 = BLE RST PIN 
+    //DEFAULT = PORT 2, PIN 6
     
     /////////////////////////////////////////////////////////////////////////
     ///////////////////////////////BOOT BLE MODULE///////////////////////////
