@@ -80,7 +80,7 @@ uint8_t send_payload(uint8_t const * bin, uint32_t length)
   
   adi_gpio_SetLow(SPI_CS_PORT,SPI_CS_PIN);
   
-  uint32_t counter = 0;
+  //uint32_t counter = 0;
   for(uint32_t i = 0 ; i< iterations ; i++)
   {
     writeReadSPI(bin+i*SPI_MAX_LENGTH,SPI_MAX_LENGTH,dummy_rx,SPI_MAX_LENGTH);
@@ -114,27 +114,21 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
   uint8_t header_ack;
   uint8_t payload_ack;
   uint32_t attempt = 0;
-  
-    //Configure pin to reset Dialog
-  if(adi_gpio_SetLow(BLE_RST_PORT, BLE_RST_PIN) !=0)
-    return 9;
-  if(adi_gpio_OutputEnable(BLE_RST_PORT,BLE_RST_PIN,true) !=0)
-    return 9;
-    
     
   //Initialize SPI
   if(initDialogSPI() != 0)
       return 1;
   
-  //Reset dialog
-  for(int32_t i = RESET_LENGTH-1 ; i>=0 ; i--)
-    adi_gpio_SetHigh(BLE_RST_PORT,BLE_RST_PIN);
+  //Reset dialog (Active High Reset)
+  adi_gpio_SetHigh(BLE_RST_PORT,BLE_RST_PIN);
   
+  Delay_ms(RESET_LENGTH);//ensure reset is recognised due to internal RC filter
   
+  //complete reset
+  adi_gpio_SetLow(BLE_RST_PORT,BLE_RST_PIN);
   
   //calculate Checksum
   crc = calc_crc(bin,length/4);
-  adi_gpio_SetLow(BLE_RST_PORT,BLE_RST_PIN);
   
   //Add wait 110ms here to improve efficiency.
   Delay_ms(110);
@@ -156,6 +150,8 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
   if(attempt == MAX_ATTEMPTS)
     return 3;
   
+  //On successful boot, D51 goes out
+  adi_gpio_SetHigh(BLE_LED_PORT, BLE_LED_PIN);
   return 0;
   
 }

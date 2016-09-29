@@ -116,7 +116,7 @@ unsigned char   BLE_UID[20] = {0x00, 0xEE, 0xAD, 0x14, 0x51, 0xDE, 0x21, 0xD8, 0
 
 //#define BLE_CODE_SIZE 10740
 //#define BLE_CODE_SIZE 11820      //Beacon 
-//#define BLE_CODE_SIZE 20860        //Paired
+//#define BLE_CODE_SIZE 20860      //Paired
 
 extern uint8_t ble_code;
 static uint8_t* ble_code_ptr = &ble_code;
@@ -200,27 +200,6 @@ void PRINT_C(char* string, int len) {
     }
 }
 
-void Print_SensData_on_UART()
-{
-    /*char buffer [8];
-    char crlf[2] = {0x0A, 0x0D};
-    char *testbuff;
-    static int i=0;
-
-    ftoa(MAX44009, &buffer[0]);
-    PRINT_C("MAX44009: ");
-    PRINT_C(buffer);        
-    
-    ftoa(SHT25[0],buffer);
-    PRINT_C("SHT25_T: ");
-    PRINT_C(buffer);
-    
-    ftoa(SHT25[1],buffer);
-    PRINT_C("SHT25_RH: ");
-    PRINT_C(buffer);
-    PRINT_C(crlf);*/
-
-}
 
 
 /*
@@ -287,11 +266,12 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     /* Clock initialization */
     SystemInit();
     
-    //TODO:What does this do? GPIO = Bluetooth?
-    adi_gpio_OutputEnable(ADI_GPIO_PORT0, (ADI_GPIO_PIN_4 | ADI_GPIO_PIN_5), true);
-
-    //TODO: Possible Delay?
+    //Enable GPIO's
+    adi_gpio_OutputEnable(ADI_GPIO_PORT0, (ADI_GPIO_PIN_4 | ADI_GPIO_PIN_5), true);//I2C to ADT7400
+    adi_gpio_OutputEnable(BLE_LED_PORT, BLE_LED_PIN, true);//BLE Ready LED
+    adi_gpio_OutputEnable(BLE_RST_PORT, BLE_RST_PIN, true);//BLE Reset Pin
     
+    //set pins. Unknown configuration
     adi_initpinmux();
     
     /* test system initialization */
@@ -317,9 +297,6 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     {
     }
     
-    adi_gpio_OutputEnable(BLE_RST_PORT, BLE_RST_PIN, true); //port 2 = BLE RST PORT, pin 4 = BLE RST PIN 
-    //DEFAULT = PORT 2, PIN 6
-    
     /////////////////////////////////////////////////////////////////////////
     ///////////////////////////////BOOT BLE MODULE///////////////////////////
     /////////////////////////////////////////////////////////////////////////
@@ -327,8 +304,6 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     BootResult = adi_Dialog14580_SPI_Boot(sps_device_dialog_bin,IMAGE_SIZE);
     DEBUG_MESSAGE("Dialog14580 failed to boot\n", BootResult, 0);
     //BootResult = adi_Dialog14580_SPI_Boot(ble_code_ptr,BLE_CODE_SIZE);
-    
-    adi_gpio_OutputEnable(ADI_GPIO_PORT2,ADI_GPIO_PIN_4,true);
     
     /* I2C INIT */
     

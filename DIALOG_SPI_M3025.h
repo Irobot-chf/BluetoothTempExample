@@ -7,8 +7,8 @@
 
 #define SPI_MAX_LENGTH 252      //MUST BE MULTIPLE OF 4
 
-#define SPI_CS_PIN     ADI_GPIO_PIN_9
-#define SPI_CS_PORT    ADI_GPIO_PORT1
+#define SPI_CS_PIN     ADI_GPIO_PIN_3
+#define SPI_CS_PORT    ADI_GPIO_PORT0
                                               
 uint8_t initDialogSPI();
 uint8_t unInitDialogSPI();
