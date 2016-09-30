@@ -7,7 +7,7 @@
 #define SPI_ACK 0x02
 #define SPI_NACK 0x20
 
-#define RESET_LENGTH     1000
+#define RESET_LENGTH     10 //ms
 #define MAX_ATTEMPTS     5000
 
 static uint8_t dummy_rx[SPI_MAX_LENGTH];        //Provisional, try to use drivers to transmit without receiving
@@ -36,12 +36,17 @@ uint32_t send_header(uint32_t length, uint8_t crc)
 {
   uint8_t spi_tx[4];
   uint8_t spi_rx[4];	
-  
+    
   adi_gpio_SetLow(SPI_CS_PORT,SPI_CS_PIN);
-  spi_tx[0] = 0x70;
-  spi_tx[1] = 0x50;
-  spi_tx[2] = 0x00;
-  spi_tx[3] = length&0xFF;
+  spi_tx[0] = 0xE0;
+  spi_tx[1] = 0xC0;
+  spi_tx[2] = 0x70;//00;
+  spi_tx[3] = 0x50;//05;//length&0xFF;
+  spi_rx[0] = 0x00;
+  spi_rx[1] = 0x00;
+  spi_rx[2] = 0x00;
+  spi_rx[3] = 0x00;
+  
   
   writeReadSPI(spi_tx, 4 , spi_rx,4 );
   if( spi_rx[3]!=SPI_ACK)
