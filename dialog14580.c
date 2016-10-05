@@ -38,20 +38,20 @@ uint32_t send_header(uint32_t length, uint8_t crc)
   uint8_t spi_rx[4];	
     
   adi_gpio_SetLow(SPI_CS_PORT,SPI_CS_PIN);
-  spi_tx[0] = 0xE0;
-  spi_tx[1] = 0xC0;
-  spi_tx[2] = 0x70;//00;
-  spi_tx[3] = 0x50;//05;//length&0xFF;
-  spi_rx[0] = 0x00;
-  spi_rx[1] = 0x00;
-  spi_rx[2] = 0x00;
-  spi_rx[3] = 0x00;
+  spi_tx[0] = 0x70;
+  spi_tx[1] = 0x50;
+  spi_tx[2] = 0x00;
+  spi_tx[3] = length&0xFF;
+ // spi_rx[0] = 0x00;
+ // spi_rx[1] = 0x00;
+ // spi_rx[2] = 0x00;
+ // spi_rx[3] = 0x00;
   
   
   writeReadSPI(spi_tx, 4 , spi_rx,4 );
   if( spi_rx[3]!=SPI_ACK)
   {
-    adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
+    ADI_GPIO_RESULT err = adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
     return 0;
   }
   
@@ -156,7 +156,7 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
     return 3;
   
   //On successful boot, D51 goes out
-  adi_gpio_SetHigh(BLE_LED_PORT, BLE_LED_PIN);
+  adi_gpio_SetLow(BLE_LED_PORT, BLE_LED_PIN);
   return 0;
   
 }

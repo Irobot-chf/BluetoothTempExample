@@ -1,5 +1,6 @@
 #define IMAGE_SIZE 18540     // Image size in bytes 
-
+
+//RESULT! String appears on phone. 3 chars sent but 10 recieved
 #pragma data_alignment=4 
 static const char sps_device_580_convertedTest_bin[] = {
 0x00,0x98,0x00,0x20,0xA5,0x04,0x00,0x20,0xAD,0x04,0x00,0x20,0xC5,0x04,0x00,

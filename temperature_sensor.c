@@ -62,10 +62,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "uart_handler.h"
 #include "dialog14580.h"
 
-//#include "sps_device_580.h"
-#include "sps_device_dialog.h"
+#include "sps_device_580.h"
+//#include "sps_device_dialog.h"
 //#include "BLE_code_beacon.h"
 
+#define BLE_BINARY sps_device_580_bin
 typedef enum
 {
   REG_READ      = 0,
@@ -77,8 +78,6 @@ typedef enum
   ADI_ADS_API_FAIL      = -1,
   ADI_ADS_API_SUCCESS   = 0
 } ADSENSORAPP_RESULT_TYPE;
-
-uint8_t BootResult = 0;
 
 /* Handle for UART device */
 #pragma data_alignment=4
@@ -96,20 +95,16 @@ static ADI_I2C_HANDLE masterDev;
 extern void ftoa(float f,char *buf);
 void Delay_ms(unsigned int mSec);
 
-static uint8_t counter = 0;
 volatile bool_t hbFlag = 0;
-static bool_t   wait_flag;
 
 void extInt0Callback(void *pCBParam, uint32_t Event, void *pArg)
 {
   *(bool_t*)pCBParam = true;
 }
 
-float   SHT25[2];
-float   MAX44009;
 
 unsigned char 	RxBuffer[];
-char   BLE_Payload[14];
+char   BLE_Payload[19];
 unsigned long   Msg_Count = 0;
 
 unsigned char   BLE_UID[20] = {0x00, 0xEE, 0xAD, 0x14, 0x51, 0xDE, 0x21, 0xD8, 0x91, 0x67, 0x8A, 0xCF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x00, 0x00};
@@ -119,7 +114,7 @@ unsigned char   BLE_UID[20] = {0x00, 0xEE, 0xAD, 0x14, 0x51, 0xDE, 0x21, 0xD8, 0
 //#define BLE_CODE_SIZE 20860      //Paired
 
 extern uint8_t ble_code;
-static uint8_t* ble_code_ptr = &ble_code;
+//static uint8_t* ble_code_ptr = &ble_code;
 
 uint32_t ADI_Sensor_Delay = 0x10000;	//0x1000;//0x1F0;
 void adsAPI_Delay(uint32_t value)  {while(value--);}
@@ -185,7 +180,7 @@ void InitUART()
 
 /*-------------------------------------------------------------------------*/
 /* Print a string to the terminal */
-void PRINT_C(char* string, int len) {
+void PRINT_C(char* string) {
 
   int16_t size_l = 0;
   size_l = strlen(string);
@@ -193,8 +188,7 @@ void PRINT_C(char* string, int len) {
   /*if(adi_uart_SubmitTxBuffer(hUartDevice,string,size_l) == ADI_UART_SUCCESS)
     adi_uart_EnableTx(hUartDevice,true);*/
   
-  //for(int i = 0; i < size_l; i++) {
-  for(int i = 0; i < len; i++) { // for BLE Payload
+  for(int i = 0; i < size_l; i++) { // for BLE Payload
     pADI_UART0->COMTX = string[i];
     while((pADI_UART0->COMLSR &((uint16_t) BITM_UART_COMLSR_TEMT)) == 0 );
     }
@@ -266,11 +260,6 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     /* Clock initialization */
     SystemInit();
     
-    //Enable GPIO's
-    adi_gpio_OutputEnable(ADI_GPIO_PORT0, (ADI_GPIO_PIN_4 | ADI_GPIO_PIN_5), true);//I2C to ADT7400
-    adi_gpio_OutputEnable(BLE_LED_PORT, BLE_LED_PIN, true);//BLE Ready LED
-    adi_gpio_OutputEnable(BLE_RST_PORT, BLE_RST_PIN, true);//BLE Reset Pin
-    
     //set pins. Unknown configuration
     adi_initpinmux();
     
@@ -295,16 +284,25 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     
     if(adi_gpio_Init(GPIOCallbackMem, ADI_GPIO_MEMORY_SIZE)!= ADI_GPIO_SUCCESS)
     {
+      DEBUG_MESSAGE("Failed to initialize GPIO\n");
     }
+    
+    //Enable GPIO's
+    adi_gpio_OutputEnable(ADI_GPIO_PORT0, (ADI_GPIO_PIN_4 | ADI_GPIO_PIN_5), true);//I2C to ADT7400
+    adi_gpio_SetHigh(BLE_LED_PORT, BLE_LED_PIN);
+    adi_gpio_OutputEnable(BLE_LED_PORT, BLE_LED_PIN, true);//BLE Ready LED
+    adi_gpio_OutputEnable(BLE_RST_PORT, BLE_RST_PIN, true);//BLE Reset Pin
     
     /////////////////////////////////////////////////////////////////////////
     ///////////////////////////////BOOT BLE MODULE///////////////////////////
     /////////////////////////////////////////////////////////////////////////
     //TODO:Boot of BLE is failing
-    BootResult = adi_Dialog14580_SPI_Boot(sps_device_dialog_bin,IMAGE_SIZE);
-    DEBUG_MESSAGE("Dialog14580 failed to boot\n", BootResult, 0);
+    if(adi_Dialog14580_SPI_Boot(BLE_BINARY, IMAGE_SIZE) != 0)
+    DEBUG_MESSAGE("Dialog14580 failed to boot\n");
     //BootResult = adi_Dialog14580_SPI_Boot(ble_code_ptr,BLE_CODE_SIZE);
     
+    
+    /////////////////FOR TEST PURPOSE//////////////////////////
     /* I2C INIT */
     
     eResult = adi_i2c_Open(TWIDEVNUM,
@@ -328,13 +326,7 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
     /* set ADT7420 slave address */
     eResult = adi_i2c_SetHardwareAddress(masterDev, TARGETADDR);
     DEBUG_RESULT("adi_i2c_SetHardwareAddress failed\n",eResult,ADI_I2C_SUCCESS);
-    
-
-    uint8_t Data[2];
-    uint16_t val;
-    
-    BLE_Payload[0]  = 0x20;
-    BLE_Payload[1]  = 0x41;
+      
     
     
     while(1)
@@ -345,9 +337,6 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
       DEBUG_RESULT("Failed to read ID register",eResult,ADI_I2C_SUCCESS);
       
       DEBUG_MESSAGE("ADT7420 Manufacture ID: 0x%x\n", DevID, TEST_VALUE);
-      
-    //eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, SHT25_DEV_ADDR, SHT25_TRIG_T_MEAS_HOLDMASTER, &Data[0], 2, 0); //stuck here
-    //DEBUG_RESULT("Reading temperature MSB register failed",eResult,ADI_I2C_SUCCESS);
     
       /* Read the temperature MSB register */
         eResult = ReadRegister(TEMPREG_MSB, &t_msb);
@@ -369,64 +358,12 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)
         
         DEBUG_MESSAGE("Temperature: %5.1f deg C\n",ctemp);
         DEBUG_MESSAGE("Temperature: %5.1f deg F\n",ftemp);
-        
-//    val = (Data[0]<<8) | Data[1];
-//    val = val >> 2;
-//    SHT25[0] = (float) (T_MEAS_CONST + (T_MEAS_MULT_CONST14 * val));   //Temparature = (-46.85+176.72*St/2^RES)
-    
-    /* SHT21 Temperature to BLE Payload */
-    BLE_Payload[4]  = Data[0];
-    BLE_Payload[5]  = Data[1];
-    
-    adsAPI_Delay(ADI_Sensor_Delay);
-    
-   
-    ////eResult = ReadRegister(0xE5, &Data[0]);
-    //eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, SHT25_DEV_ADDR, SHT25_TRIG_RH_MEAS_HOLDMASTER, &Data[0], 2, 0);
-    //DEBUG_RESULT("Reading temperature LSB register failed",eResult,ADI_I2C_SUCCESS);
-    //
-    //val = (Data[0]<<8) | Data[1];
-    //val = val >> 4;
-    //SHT25[1] = (float) (RH_MEAS_CONST + (RH_MEAS_MULT_CONST12 * val));   //Relative Humidity = (-6 + 125*RHval/2^RES)
-    //
-    ///* SHT21 Humidity to BLE Payload */
-    //BLE_Payload[2]  = Data[0];
-    //BLE_Payload[3]  = Data[1];
-    //  
-    //uint8_t Data[2]={0};
-    //uint8_t exp=0, mant=0;
-    //
-    //eResult = adsAPI_RW_I2C_Sensor_Reg(REG_READ, MAX44009_DEV_ADDR, MAX44009_LUX_HIGH, &Data[0], 2, 0);
-    //exp = (Data[0] & 0xF0)>>4;
-    //mant = (Data[0]<<4) | (Data[1] & 0x0F);
-    //
-    ///* MAX44009 Ambient Light to BLE Payload */
-    //BLE_Payload[6]  = Data[0];
-    //BLE_Payload[7]  = Data[1];
-    //
-    //uint8_t exp_val=2;
-    //for(uint8_t i=exp; i>0; i--) exp_val*=2;
-    //MAX44009 = (float) (exp_val * mant* MAX44009_LUX_LSB_VALUE);
-    
-    /* Nothing to be written to Ambient Light CH1 in BLE Payload */
-    BLE_Payload[8]  = 0;
-    BLE_Payload[9]  = 0;
-    
-    /* BLE Message counter */
 
-    BLE_Payload[13] = Msg_Count & 0xFF;
-    BLE_Payload[12] = (Msg_Count >> 8) & 0xFF;
-    BLE_Payload[11] = (Msg_Count >> 16) & 0xFF;
-    BLE_Payload[10] = (Msg_Count >> 24) & 0xFF;
-    Msg_Count++;
-    
-    InitUART();
-    //Print_SensData_on_UART();
-    PRINT_C(BLE_Payload, 14);
-    PRINT_C(BLE_UID, 20);
-    Delay_ms(500);
-    adi_uart_Close(hUartDevice);
-    Delay_ms(1500);
-    
+        InitUART();
+        sprintf(BLE_Payload, "Temperature is: %f\n", ctemp);
+        PRINT_C(BLE_Payload);
+        Delay_ms(500);
+        adi_uart_Close(hUartDevice);
     }
+    
 }

@@ -60,7 +60,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <services/gpio/adi_gpio.h>
 
 
-#define SPI_DEV_NUM                         1
+#define SPI_DEV_NUM                         0
 #define SPI_CS_NUM                          ADI_SPI_CS0
 
 
@@ -92,9 +92,6 @@ extern int32_t adi_initpinmux(void);
 
 uint8_t initDialogSPI()
 {
-
-//  if(adi_gpio_PullUpEnable(ADI_GPIO_PORT1,ADI_GPIO_PIN_9,true) !=0)
-//    return 1;
 
   if(adi_spi_Open(SPI_DEV_NUM,SPIMem,ADI_SPI_MEMORY_SIZE,&hSPIDevice) != ADI_SPI_SUCCESS)
   return 1;
@@ -128,11 +125,6 @@ uint8_t initDialogSPI()
 
 uint8_t unInitDialogSPI()
 {
-
-//  if(adi_gpio_PullUpEnable(SPI_CS_PORT,SPI_CS_PIN,true) !=0)
-//    return 1;
-//  if(adi_gpio_OutputEnable(SPI_CS_PORT,SPI_CS_PIN,false) !=0)
-//    return 9;
 
   if(adi_spi_Close(hSPIDevice) != ADI_SPI_SUCCESS)
   return 1;
@@ -180,7 +172,7 @@ ADI_SPI_RESULT writeReadSPI(uint8_t const * _arrayW, uint16_t _lengthW, uint8_t*
   ADI_SPI_RESULT err_code = ADI_SPI_SUCCESS;
    
   
-   err_code = adi_spi_EnableDmaMode(hSPIDevice, false);
+   err_code = adi_spi_EnableDmaMode(hSPIDevice, true);
    if(err_code)
      return err_code;
 
@@ -192,6 +184,7 @@ ADI_SPI_RESULT writeReadSPI(uint8_t const * _arrayW, uint16_t _lengthW, uint8_t*
    transceive.pTransmitter = (uint8_t *)_arrayW;
    
    err_code = adi_spi_ReadWrite(hSPIDevice,&transceive);
+   
    if(err_code)
      return err_code;
    

@@ -38,11 +38,10 @@ int32_t adi_initpinmux(void);
 int32_t adi_initpinmux(void) {
     /* Port Control MUX registers */
     *((volatile uint32_t *)REG_GPIO0_CFG) = UART0_TX_PORTP0_MUX | UART0_RX_PORTP0_MUX 
-      | I2C0_SCL_PORTP0_MUX | I2C0_SDA_PORTP0_MUX | SPI1_SCLK_PORTP1_MUX | SPI1_MISO_PORTP1_MUX
-      | SPI1_MOSI_PORTP1_MUX | SPI1_CS_0_PORTP1_MUX;
+      | I2C0_SCL_PORTP0_MUX | I2C0_SDA_PORTP0_MUX;
     
-   // *((volatile uint32_t *)REG_GPIO1_CFG) = SPI1_SCLK_PORTP1_MUX | SPI1_MISO_PORTP1_MUX
-   //  | SPI1_MOSI_PORTP1_MUX | SPI1_CS_0_PORTP1_MUX;
+    *((volatile uint32_t *)REG_GPIO1_CFG) = SPI1_SCLK_PORTP1_MUX | SPI1_MISO_PORTP1_MUX
+     | SPI1_MOSI_PORTP1_MUX | SPI1_CS_0_PORTP1_MUX;
 
     return 0;
 }

@@ -1923,6 +1923,54 @@
     </settings>
   </configuration>
   <group>
+    <name>BLE Source</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\ble_app_barebone_580.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BLE_code.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BLE_code_beacon.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BLE_code_paired.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\sps_device_580.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\sps_device_580_convertedTest.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\sps_device_dialog.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\sps_device_test.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+  </group>
+  <group>
     <name>Source</name>
     <file>
       <name>$PROJ_DIR$\..\..\src\dma\adi_dma.c</name>
@@ -1968,6 +2016,12 @@
     <name>System</name>
     <file>
       <name>$PROJ_DIR$\..\PinMux.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\pinMuxBLE.c</name>
     </file>
   </group>
   <file>
