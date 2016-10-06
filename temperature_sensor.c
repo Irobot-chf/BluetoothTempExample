@@ -82,8 +82,6 @@ ADI_UART_HANDLE          hUartDevice;
 static uint8_t GPIOCallbackMem[ADI_GPIO_MEMORY_SIZE];
 
 static ADI_I2C_HANDLE masterDev;
-
-extern void ftoa(float f,char *buf);
 void Delay_ms(unsigned int mSec);
 
 volatile bool_t hbFlag = 0;
