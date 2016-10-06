@@ -3,13 +3,6 @@
 #include "system.h"
 #include "DIALOG_SPI_M3025.h"
 
-
-#define SPI_ACK 0x02
-#define SPI_NACK 0x20
-
-#define RESET_LENGTH     10 //ms
-#define MAX_ATTEMPTS     5000
-
 static uint8_t dummy_rx[SPI_MAX_LENGTH];        //Provisional, try to use drivers to transmit without receiving
 
 extern void Delay_ms(unsigned int mSec);
@@ -20,6 +13,7 @@ uint8_t calc_crc(uint8_t const * bin, uint32_t length){
   uint32_t temp;
   uint8_t crc;
   crc=0xFF;
+  
   for(i=0;i<length;i++)
   {
     temp=* ( volatile uint32_t*)(bin+4*i);
@@ -119,7 +113,13 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
   uint8_t header_ack;
   uint8_t payload_ack;
   uint32_t attempt = 0;
-    
+  
+  //Init GPIOs for RST and Indicator LED
+  adi_gpio_SetHigh(BLE_LED_PORT, BLE_LED_PIN);
+  adi_gpio_OutputEnable(BLE_LED_PORT, BLE_LED_PIN, true);//BLE Ready LED]
+  adi_gpio_SetHigh(BLE_LED_PORT, BLE_LED_PIN);
+  adi_gpio_OutputEnable(BLE_RST_PORT, BLE_RST_PIN, true);//BLE Reset Pin
+  
   //Initialize SPI
   if(initDialogSPI() != 0)
       return 1;

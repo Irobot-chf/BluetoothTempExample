@@ -1994,6 +1994,9 @@
       <name>$PROJ_DIR$\..\..\src\wdt\adi_wdt.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\BLE.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\src\common.c</name>
     </file>
     <file>
@@ -2014,12 +2017,6 @@
   </group>
   <group>
     <name>System</name>
-    <file>
-      <name>$PROJ_DIR$\..\PinMux.c</name>
-      <excluded>
-        <configuration>Debug</configuration>
-      </excluded>
-    </file>
     <file>
       <name>$PROJ_DIR$\..\pinMuxBLE.c</name>
     </file>

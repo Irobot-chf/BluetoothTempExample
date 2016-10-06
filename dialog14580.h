@@ -5,6 +5,11 @@
 
 #include <services/gpio/adi_gpio.h>
 
+#define SPI_ACK 0x02
+#define SPI_NACK 0x20
+
+#define RESET_LENGTH     10 //ms
+#define MAX_ATTEMPTS     5000
 
 #define BLE_RST_PIN     ADI_GPIO_PIN_12
 #define BLE_RST_PORT    ADI_GPIO_PORT0
