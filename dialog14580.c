@@ -3,8 +3,11 @@
 #include "system.h"
 #include "DIALOG_SPI_M3025.h"
 
-static uint8_t dummy_rx[SPI_MAX_LENGTH];        //Provisional, try to use drivers to transmit without receiving
 
+#define SPI_CS_NUM      ADI_SPI_CS0
+
+
+static uint8_t dummy_rx[SPI_MAX_LENGTH];    //Provisional, try to use drivers to transmit without receiving
 extern void Delay_ms(unsigned int mSec);
 
 // Local functions
@@ -20,7 +23,7 @@ uint8_t calc_crc(uint8_t const * bin, uint32_t length){
     crc^=(0xFF&(temp>>24));
     crc^=(0xFF&(temp>>16));
     crc^=(0xFF&(temp>>8 ));
-    crc^=(0xFF&(temp		));
+    crc^=(0xFF&(temp    ));
   }
   return crc;
 }
@@ -30,8 +33,8 @@ uint32_t send_header(uint32_t length, uint8_t crc)
 {
   uint8_t spi_tx[4];
   uint8_t spi_rx[4];	
-    
-  adi_gpio_SetLow(SPI_CS_PORT,SPI_CS_PIN);
+  
+  //adi_gpio_SetLow(SPI_CS_PORT,SPI_CS_PIN);
   spi_tx[0] = 0x70;
   spi_tx[1] = 0x50;
   spi_tx[2] = 0x00;
@@ -45,7 +48,7 @@ uint32_t send_header(uint32_t length, uint8_t crc)
   writeReadSPI(spi_tx, 4 , spi_rx,4 );
   if( spi_rx[3]!=SPI_ACK)
   {
-    ADI_GPIO_RESULT err = adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
+    //adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
     return 0;
   }
   
@@ -60,12 +63,12 @@ uint32_t send_header(uint32_t length, uint8_t crc)
   writeReadSPI(spi_tx, 3 , spi_rx,3 );
   if(spi_rx[2]!=SPI_ACK)
   {
-    adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
+   // adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
     return 0;
   }
   spi_tx[0] = 0x00;
   writeReadSPI(spi_tx,1,spi_rx,1);
-  adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
+  //adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
   return 1;
 }
 
@@ -77,7 +80,7 @@ uint8_t send_payload(uint8_t const * bin, uint32_t length)
   uint32_t iterations = length/SPI_MAX_LENGTH;
   uint32_t module = length%SPI_MAX_LENGTH;
   
-  adi_gpio_SetLow(SPI_CS_PORT,SPI_CS_PIN);
+  //adi_gpio_SetLow(SPI_CS_PORT,SPI_CS_PIN);
   
   //uint32_t counter = 0;
   for(uint32_t i = 0 ; i< iterations ; i++)
@@ -96,7 +99,7 @@ uint8_t send_payload(uint8_t const * bin, uint32_t length)
   writeReadSPI(spi_tx,2,spi_rx,2);
   
   
-  adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
+  //adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
   
   if(spi_rx[1]!=SPI_ACK || spi_rx[0]!=0xAA)
     return 0;

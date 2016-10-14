@@ -12,14 +12,15 @@
 #define BLE_H
 
 #include "uart_handler.h"
+#include "Ble_adi_specific.h"
 
 //initialize UART device for BLE
-ADI_UART_RESULT InitUART();
+void ble_InitUART();
 
 //Close UART device
-void CloseUart(ADI_UART_HANDLE hUartDevice);
+void ble_CloseUart(ADI_UART_HANDLE hUartDevice);
 
 // Print a string to the terminal 
-ADI_UART_RESULT PRINT_C(char* string);
+void ble_PRINT_C(char* string);
 
 #endif // BLE_H

@@ -96,12 +96,6 @@ uint8_t initDialogSPI()
   if(adi_spi_Open(SPI_DEV_NUM,SPIMem,ADI_SPI_MEMORY_SIZE,&hSPIDevice) != ADI_SPI_SUCCESS)
   return 1;
 
-  //Configure CS pin
-  if(adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN) !=0)
-    return 9;
-  if(adi_gpio_OutputEnable(SPI_CS_PORT,SPI_CS_PIN,true) !=0)
-    return 9;
-    
   /* Set the SPI clock rate */
   if(adi_spi_SetBitrate(hSPIDevice,300000) != ADI_SPI_SUCCESS)
   return 3;

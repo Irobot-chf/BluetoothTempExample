@@ -72,7 +72,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Handle for UART device */
 #pragma data_alignment=4
-ADI_UART_HANDLE          hUartDevice;
 
 /* Memory for  UART driver */
 #pragma data_alignment=4
@@ -183,7 +182,7 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)                 
 /*                                                                                                    
  * main                                                                                               
  */
- int main(void)
+int main(void)
 {
     ADI_I2C_RESULT eResult=ADI_I2C_SUCCESS;
     uint8_t DevID;///////////////////////////FOR TEST PURPOSE///////////////////////////////////////
@@ -195,7 +194,7 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)                 
     /* Clock initialization */
     SystemInit();
     
-    //set pins. Unknown configuration
+    //set pins
     adi_initpinmux();
     
     /* test system initialization */
@@ -256,16 +255,14 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)                 
                                                                                    ///
     ///////////////////////////END OF TEMPERATURE TEST////////////////////////////////
     
-    InitUART();
+    ble_InitUART();
     
     while(1)
     {
       ///////////////////////////FOR TEST PURPOSE///////////////////////////////////////////////////
       DevID = 0u;                                                                                ///
       eResult = ReadRegister(ID_REG, &DevID);                                                    ///
-      DEBUG_RESULT("Failed to read ID register",eResult,ADI_I2C_SUCCESS);                        ///
-                                                                                                 ///
-      DEBUG_MESSAGE("ADT7420 Manufacture ID: 0x%x\n", DevID, TEST_VALUE);                        ///
+      DEBUG_RESULT("Failed to read ID register",eResult,ADI_I2C_SUCCESS);                      ///
                                                                                                  ///
       /* Read the temperature MSB register */                                                    ///
         eResult = ReadRegister(TEMPREG_MSB, &t_msb);                                             ///
@@ -291,9 +288,9 @@ static ADI_I2C_RESULT ReadRegister(uint8_t reg, uint8_t *value)                 
         
         
         sprintf(BLE_Payload, "Temperature is: %f\n", ctemp);
-        PRINT_C(BLE_Payload);
+        ble_PRINT_C(BLE_Payload);
         Delay_ms(500);
         
     }
-    CloseUart(hUartDevice);
+    ble_CloseUart(hUartDevice);
 }

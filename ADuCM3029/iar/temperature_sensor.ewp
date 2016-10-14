@@ -1923,6 +1923,18 @@
     </settings>
   </configuration>
   <group>
+    <name>BLE Library</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\BLE.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Ble_adi_specific.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\uart_handler.h</name>
+    </file>
+  </group>
+  <group>
     <name>BLE Source</name>
     <file>
       <name>$PROJ_DIR$\..\..\ble_app_barebone_580.h</name>
@@ -1994,13 +2006,7 @@
       <name>$PROJ_DIR$\..\..\src\wdt\adi_wdt.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\BLE.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\..\src\common.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\ftoa.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\src\startup.c</name>
@@ -2021,14 +2027,20 @@
       <name>$PROJ_DIR$\..\pinMuxBLE.c</name>
     </file>
   </group>
+  <group>
+    <name>WIP</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\Communications.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+  </group>
   <file>
     <name>$PROJ_DIR$\..\..\dialog14580.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\DIALOG_SPI_M3025.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\Readme_temperature_sensor.html</name>
   </file>
 </project>
 
