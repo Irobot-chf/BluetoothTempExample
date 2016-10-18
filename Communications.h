@@ -16,6 +16,7 @@
 #define SPI_DEV_NUM             0
 #define SPI_CS_NUM              ADI_SPI_CS0
 #define SPI_BITRATE             300000
+#define SPI_MAX_LENGTH          252      //MUST BE MULTIPLE OF 4
 
 /******************************************************************************/
 /* UART driver parameters                                                     */
@@ -104,7 +105,18 @@ unsigned char Uart_ReadWrite(char* string);
 unsigned char Uart_Read(void);
 
 //setup buffers to write to UART
-unsigned char Uart_Write(char* string);
+unsigned char Uart_Write(char *string);
 
+//initialise SPI
+unsigned char Spi_Init(void);
+
+//close SPI
+unsigned char Spi_Close(void);
+
+//Write and read using SPI
+unsigned char Spi_ReadWrite(uint8_t const * _arrayW, uint16_t _lengthW, uint8_t* _arrayR, uint16_t _lengthR);
+
+//write to SPI
+unsigned char Spi_Write(uint8_t const * _array, uint8_t _length);
 
 #endif /* _COMMUNICATION_H_ */

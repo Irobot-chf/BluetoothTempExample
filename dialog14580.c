@@ -1,8 +1,7 @@
 
 #include "dialog14580.h"
 #include "system.h"
-#include "DIALOG_SPI_M3025.h"
-
+#include "Communications.h"
 
 #define SPI_CS_NUM      ADI_SPI_CS0
 
@@ -45,7 +44,7 @@ uint32_t send_header(uint32_t length, uint8_t crc)
  // spi_rx[3] = 0x00;
   
   
-  writeReadSPI(spi_tx, 4 , spi_rx,4 );
+  Spi_ReadWrite(spi_tx, 4 , spi_rx,4 );
   if( spi_rx[3]!=SPI_ACK)
   {
     //adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
@@ -60,14 +59,14 @@ uint32_t send_header(uint32_t length, uint8_t crc)
   spi_rx[2] = 0x00;
   spi_rx[3] = 0x00;
     
-  writeReadSPI(spi_tx, 3 , spi_rx,3 );
+  Spi_ReadWrite(spi_tx, 3 , spi_rx,3 );
   if(spi_rx[2]!=SPI_ACK)
   {
    // adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
     return 0;
   }
   spi_tx[0] = 0x00;
-  writeReadSPI(spi_tx,1,spi_rx,1);
+  Spi_ReadWrite(spi_tx,1,spi_rx,1);
   //adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
   return 1;
 }
@@ -85,18 +84,18 @@ uint8_t send_payload(uint8_t const * bin, uint32_t length)
   //uint32_t counter = 0;
   for(uint32_t i = 0 ; i< iterations ; i++)
   {
-    writeReadSPI(bin+i*SPI_MAX_LENGTH,SPI_MAX_LENGTH,dummy_rx,SPI_MAX_LENGTH);
+    Spi_ReadWrite(bin+i*SPI_MAX_LENGTH,SPI_MAX_LENGTH,dummy_rx,SPI_MAX_LENGTH);
   }
   
   if(module > 0)
   {
-    writeReadSPI(bin+iterations*SPI_MAX_LENGTH,module,dummy_rx,module);
+    Spi_ReadWrite(bin+iterations*SPI_MAX_LENGTH,module,dummy_rx,module);
   }
   
   spi_tx[0] = 0x00;
   spi_tx[1] = 0x00;
   
-  writeReadSPI(spi_tx,2,spi_rx,2);
+  Spi_ReadWrite(spi_tx,2,spi_rx,2);
   
   
   //adi_gpio_SetHigh(SPI_CS_PORT,SPI_CS_PIN);
@@ -124,7 +123,7 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
   adi_gpio_OutputEnable(BLE_RST_PORT, BLE_RST_PIN, true);//BLE Reset Pin
   
   //Initialize SPI
-  if(initDialogSPI() != 0)
+  if(Spi_Init() != 0)
       return 1;
   
   //Reset dialog (Active High Reset)
@@ -152,7 +151,7 @@ uint32_t adi_Dialog14580_SPI_Boot(uint8_t const * bin, uint32_t length)
     } while(((header_ack&payload_ack)!=1) && (attempt<MAX_ATTEMPTS));
   
   //Uninitialize SPI
-  if(unInitDialogSPI() != 0)
+  if(Spi_Close() != 0)
       return 2;
   
   if(attempt == MAX_ATTEMPTS)

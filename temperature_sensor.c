@@ -94,7 +94,8 @@ void extInt0Callback(void *pCBParam, uint32_t Event, void *pArg)
 
 
 
-char BLE_Payload[256];
+char BLE_Payload[255];
+
 unsigned long   Msg_Count = 0;
 
 unsigned char   BLE_UID[20] = {0x00, 0xEE, 0xAD, 0x14, 0x51, 0xDE, 0x21, 0xD8, 0x91, 0x67, 0x8A, 0xCF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x00, 0x00};
@@ -290,7 +291,7 @@ int main(void)
         
         
         sprintf(BLE_Payload, "Temperature is: %f\n", ctemp);
-        Uart_ReadWrite("TmpSTING\n");
+        Uart_ReadWrite(BLE_Payload);
         Delay_ms(500);
         
     }

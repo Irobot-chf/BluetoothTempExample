@@ -2050,6 +2050,9 @@
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\DIALOG_SPI_M3025.c</name>
+    <excluded>
+      <configuration>Debug</configuration>
+    </excluded>
   </file>
 </project>
 

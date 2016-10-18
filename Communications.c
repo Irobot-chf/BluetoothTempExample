@@ -1,17 +1,23 @@
 
 
 #include <drivers/uart/adi_uart.h>
+#include <drivers/spi/adi_spi.h>
+
 #include "Communications.h"
 
-uint8_t         UartDeviceMem[UART_MEMORY_SIZE];
-ADI_UART_HANDLE hUartDevice;
-unsigned char 	RxBuffer[];
-unsigned char   TxBuffer[];
-ADI_UART_RESULT  eUartResult;
-bool data_sent = false;
-bool data_received = false;
+uint8_t                 UartDeviceMem[UART_MEMORY_SIZE];//UART memory size
+ADI_UART_HANDLE         hUartDevice;//UART device handle
+unsigned char 	        TxBuffer[];//UART transmit buffer
+unsigned char 	        RxBuffer[];//UART receive buffer
+ADI_UART_RESULT         eUartResult;//UART error variable
+bool data_sent =        false;//UART data_sent flag
+bool data_received =    false;//UART data_recieved flag
 
-//ADI_SPI_RESULT eSpiResult;
+
+ADI_SPI_RESULT          eSpiResult; //SPI error variable
+static ADI_SPI_HANDLE   hSPIDevice; //SPI handle
+static uint8_t          SPIMem[ADI_SPI_MEMORY_SIZE];//SPI memory size
+static ADI_SPI_TRANSCEIVER transceive;//transceive struct for SPI Read/Writes
 
 
 /********************************************************************
@@ -105,7 +111,7 @@ unsigned char Uart_Close(void)
 * Return Value : 0 = Success                                                                    
 *                1 = Failure (See eUartResult in debug mode for adi micro specific info)     
 **********************************************************************************************/
-unsigned char Uart_ReadWrite(char* string)
+unsigned char Uart_ReadWrite(char *string)
 {
   //clear flags
   data_sent = false;
@@ -126,8 +132,10 @@ unsigned char Uart_ReadWrite(char* string)
   
   //parse string to TxBuffer for submitting
   for(int i = 0; i < size_l; i++) // parse string to Tx buffer
-    TxBuffer[i] = string[i];  //TODO: Possible parsing error. 4th char transfers all remaining chars. 2nd char not transfered on UART
-  
+  {
+    TxBuffer[i] = string[i];// = string[i];  //TODO: Possible parsing error. 4th char transfers all remaining chars. 2nd char not transfered on UART
+  }
+
   //'empty' RxBuffer using NULL char
   RxBuffer[0] = '\0';
 
@@ -137,7 +145,7 @@ unsigned char Uart_ReadWrite(char* string)
     return 1;
   
   //submit TxBuffer for sending data
-  eUartResult = adi_uart_SubmitTxBuffer(hUartDevice, TxBuffer, size_l);
+  eUartResult = adi_uart_SubmitTxBuffer(hUartDevice, string, size_l);
   if(eUartResult != ADI_UART_SUCCESS)
     return 1;
   
@@ -204,6 +212,7 @@ unsigned char Uart_Read(void)
     return 0;
 }
 
+
 /**********************************************************************************************
 * Function Name: UART_Write                                                                   
 * Description  : This function parses a string to the TxBuffer, submits it before 
@@ -212,7 +221,7 @@ unsigned char Uart_Read(void)
 * Return Value : 0 = Success                                                                    
 *                1 = Failure (See eUartResult in debug mode for adi micro specific info)     
 **********************************************************************************************/
-unsigned char Uart_Write(char* string)
+unsigned char Uart_Write(char* TxBuffer)
 {
   //clear flag
   data_sent = false;
@@ -224,11 +233,7 @@ unsigned char Uart_Write(char* string)
   
   //length of string
   int16_t size_l = 0; 
-  size_l = strlen(string);
-  
-  //parse string to TxBuffer for submitting
-  for(int i = 0; i < size_l; i++) // parse string to Tx buffer
-      TxBuffer[i] = string[i];
+  size_l = strlen(TxBuffer);
   
   //submit TxBuffer for sending data
   eUartResult = adi_uart_SubmitTxBuffer(hUartDevice, TxBuffer, size_l);
@@ -251,31 +256,38 @@ unsigned char Uart_Write(char* string)
     return 0;
 }
 
-/*
-unsigned char Spi_Init()
+
+/**********************************************************************************************
+* Function Name: Spi_Init                                                                   
+* Description  : This function initializes SPI and creates a handle which is configured accordingly
+* Arguments    : void                                                                       
+* Return Value : 0 = Success                                                                    
+*                1 = Failure (See eUartResult in debug mode for adi micro specific info)     
+**********************************************************************************************/
+unsigned char Spi_Init(void)
 {
   eSpiResult = adi_spi_Open(SPI_DEV_NUM,SPIMem,ADI_SPI_MEMORY_SIZE,&hSPIDevice);
-  if(eUartResult != ADI_UART_SUCCESS)
+  if(eSpiResult != ADI_SPI_SUCCESS)
     return 1;
   
   //Set the SPI clock rate 
   eSpiResult = adi_spi_SetBitrate(hSPIDevice,SPI_BITRATE);
-  if(eUartResult != ADI_UART_SUCCESS)
+  if(eSpiResult != ADI_SPI_SUCCESS)
     return 1;
   
   //Set the chip select 
   eSpiResult = adi_spi_SetChipSelect(hSPIDevice, SPI_CS_NUM);
-  if(eUartResult != ADI_UART_SUCCESS)
+  if(eSpiResult != ADI_SPI_SUCCESS)
     return 1;
   
   //Enable continue mode (Chip Select remains low until the end of the transaction
   eSpiResult = adi_spi_SetContinousMode(hSPIDevice, true);
-  if(eUartResult != ADI_UART_SUCCESS)
+  if(eSpiResult != ADI_SPI_SUCCESS)
     return 1;
   
   //Disable DMA
   eSpiResult = adi_spi_EnableDmaMode(hSPIDevice, false);
-  if(eUartResult != ADI_UART_SUCCESS)
+  if(eSpiResult != ADI_SPI_SUCCESS)
     return 1;
   
   else
@@ -283,17 +295,96 @@ unsigned char Spi_Init()
 }
 
 
-unsigned char Spi_Close()
+/**********************************************************************************************
+* Function Name: Spi_Close                                                                   
+* Description  : This function closes the existing SPI handle
+* Arguments    : void                                                                       
+* Return Value : 0 = Success                                                                    
+*                1 = Failure (See eUartResult in debug mode for adi micro specific info)     
+**********************************************************************************************/
+unsigned char Spi_Close(void)
 {
   eSpiResult = adi_spi_Close(hSPIDevice);
-  if(eUartResult != ADI_UART_SUCCESS)
+  if(eSpiResult != ADI_SPI_SUCCESS)
     return 1;
 
   else
     return 0;
 }
-/*
-unsigned char Spi_Write
 
-unsigned char Spi_ReadWrite
-*/
+
+/**********************************************************************************************
+* Function Name: Spi_ReadWrite                                                                   
+* Description  : This function configures a transceive struct to write and read from the SPI object
+* Arguments    : uint8_t const* TxArray = Transmit Array
+*                uint16_t TxLength = Transmit length (bytes)
+*                uint8_t* RxArray = Receive Array
+*                uint16_t RxLength = Recieve length (bytes)                                                                   
+* Return Value : 0 = Success                                                                    
+*                1 = Failure (See eUartResult in debug mode for adi micro specific info)     
+**********************************************************************************************/
+unsigned char Spi_ReadWrite(uint8_t const* TxArray, uint16_t TxLength, uint8_t* RxArray, uint16_t RxLength)
+{  
+  //enable DMA mode to manage transfers in background
+   eSpiResult = adi_spi_EnableDmaMode(hSPIDevice, true);
+   if(eSpiResult != ADI_SPI_SUCCESS)
+    return 1;
+
+   //setup transceive struct with Tx and Rx buffers
+   transceive.TransmitterBytes = TxLength;
+   transceive.ReceiverBytes = RxLength;
+   transceive.nTxIncrement = true;
+   transceive.nRxIncrement = true;
+   transceive.pReceiver = RxArray;
+   transceive.pTransmitter = (uint8_t *)TxArray;
+   
+   //commit transeive struct to write read operation
+   eSpiResult = adi_spi_ReadWrite(hSPIDevice,&transceive);
+   if(eSpiResult != ADI_SPI_SUCCESS)
+    return 1;
+   
+   //disable DMA mode
+   eSpiResult = adi_spi_EnableDmaMode(hSPIDevice, false);
+   if(eSpiResult != ADI_SPI_SUCCESS)
+    return 1;
+   
+    else
+    return 0;
+}
+
+
+/**********************************************************************************************
+* Function Name: Spi_Write                                                                   
+* Description  : This function configures a transceive struct to write to the SPI object
+* Arguments    : void                                                                       
+* Return Value : 0 = Success                                                                    
+*                1 = Failure (See eUartResult in debug mode for adi micro specific info)     
+**********************************************************************************************/
+unsigned char Spi_Write(uint8_t const * TxArray, uint8_t TxLength)
+{
+  //enable DMA mode to manage transfers in background
+   eSpiResult = adi_spi_EnableDmaMode(hSPIDevice, true);
+   if(eSpiResult != ADI_SPI_SUCCESS)
+    return 1;
+   
+   //setup transceive struct with Tx buffer
+   transceive.TransmitterBytes = TxLength;                               
+   transceive.ReceiverBytes = 0;
+   transceive.nTxIncrement = true;
+   transceive.nRxIncrement = false;
+   transceive.pReceiver = NULL;
+   transceive.pTransmitter = (uint8_t *)TxArray;
+   
+   //commit transeive struct to write read operation
+   eSpiResult = adi_spi_ReadWrite(hSPIDevice,&transceive);
+   if(eSpiResult != ADI_SPI_SUCCESS)
+    return 1;
+   
+   //disable DMA mode
+   eSpiResult = adi_spi_EnableDmaMode(hSPIDevice, false);      
+   if(eSpiResult != ADI_SPI_SUCCESS)
+    return 1;
+   
+   else
+    return 0;
+}

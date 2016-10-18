@@ -55,7 +55,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>		/* for 'NULL' */
 #include <string.h>		/* for strlen */
 
-
+#include "Communications.h"
 #include "DIALOG_SPI_M3025.h"
 #include <services/gpio/adi_gpio.h>
 
@@ -76,14 +76,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* (across pins P3.5 & P3.6 on EVAL-ADuM350-MOCZ/Rev0 board)   */
 /* (across pins P1.5 & P1.6 on EVAL-ADuM320EBZ /Rev0 A1)       */
 /* otherwise undefine and internal loopback will be used       */
-
-
-/* SPI device handle */
-static ADI_SPI_HANDLE              hSPIDevice;
-/* Memory required for SPI driver */
-static uint8_t SPIMem[ADI_SPI_MEMORY_SIZE];
-
-static ADI_SPI_TRANSCEIVER transceive;
 
 
 #if (ADI_CFG_ENABLE_DEPRECATED_DYNAMIC_PIN_MUX_SUPPORT == 0 )
