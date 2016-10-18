@@ -10,10 +10,11 @@
 
 uint8_t         UartDeviceMem[ADI_UART_MEMORY_SIZE];
 ADI_UART_HANDLE hUartDevice;
+unsigned char 	TxBuffer[];
 unsigned char 	RxBuffer[];
 
 
-void ble_UARTCallback( void *pAppHandle, uint32_t nEvent, void *pArg)
+void UARTCallback( void *pAppHandle, uint32_t nEvent, void *pArg)
 {
    /* CASEOF (event type) */
     switch (nEvent)
@@ -60,6 +61,8 @@ void set_Uart_Config()
                           UART_DIV_M_115200,
                           UART_DIV_N_115200,
                           UART_OSR_115200);
+    
+    adi_uart_EnableFifo(hUartDevice, true);
 }
 
 
@@ -78,7 +81,7 @@ void register_Callback(bool Enable)
   if(Enable)
   {
     //register callback
-    adi_uart_RegisterCallback(hUartDevice,ble_UARTCallback,/*(void*)0*/hUartDevice);
+    adi_uart_RegisterCallback(hUartDevice,UARTCallback,/*(void*)0*/hUartDevice);
     //submit buffer
     adi_uart_SubmitRxBuffer(hUartDevice,RxBuffer,1);
   }
@@ -86,15 +89,22 @@ void register_Callback(bool Enable)
   else
   {
     //clear callback (disable interrupt)
-    //adi_uart_RegisterCallback(hUartDevice, 0, 0);
+    adi_uart_RegisterCallback(hUartDevice, 0, 0);
   }
 }
 
 
 void parse_str_to_BLE(char* string,int16_t size_l)
 {
-  for(int i = 0; i < size_l; i++) { // for BLE Payload
+  
+  for(int i = 0; i < size_l; i++) // parse string to Tx buffer
+      TxBuffer[i] = string[i];
+  
+  adi_uart_SubmitRxBuffer(hUartDevice, RxBuffer, 1);
+  
+  adi_uart_SubmitTxBuffer(hUartDevice, TxBuffer, size_l);
+  /*for(int i = 0; i < size_l; i++) { // for BLE Payload
       pADI_UART0->COMTX = string[i];
       while((pADI_UART0->COMLSR &((uint16_t) BITM_UART_COMLSR_TEMT)) == 0 );
-      }
+      }*/
 }

@@ -122,10 +122,6 @@ extern uint16_t accept_dio_rank;
 extern uint8_t sensor_end_node;
 extern ADI_UART_HANDLE hUartDevice;
 
-void ADI_UART_Receive_CB(uint8_t );
-void UART_config_init(void);
-void UARTCallback(void *pAppHandle, uint32_t nEvent, void *pArg);
-void FlashCallback(void *pCBParam, uint32_t Event, void *pArg);
 
 #define EUI64LEN                    			8                                         // Up to IPv6 supported
 #define NO_OF_PHY_CHANS                 		10

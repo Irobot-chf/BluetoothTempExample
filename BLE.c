@@ -29,22 +29,19 @@ void ble_PRINT_C(char* string) {
   int16_t size_l = 0;
   size_l = strlen(string);
   
-  //disable rx and tx transfer
-  enable_Uart_Tx_Rx(false);
-  
   //register callback
   register_Callback(true);
-  
-  //enable rx and tx transfer
-  enable_Uart_Tx_Rx(true);
   
   //send string to BLE COM port
   parse_str_to_BLE(string,size_l);
   
+  //enable rx and tx transfer
+  enable_Uart_Tx_Rx(true);
+  
   //disable rx and tx transfer
-  enable_Uart_Tx_Rx(false);
+  //enable_Uart_Tx_Rx(false);
   
   //Unregister Callback
-  register_Callback(false);
+  //register_Callback(false);
   
 }

@@ -61,8 +61,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "temperature_sensor.h"
 #include "uart_handler.h"
 #include "dialog14580.h"
-#include "BLE.h"
+//#include "BLE.h"
 #include <string.h>
+#include "Communications.h"
+
 
 #include "sps_device_580.h"
 //#include "sps_device_dialog.h"
@@ -255,14 +257,14 @@ int main(void)
                                                                                    ///
     ///////////////////////////END OF TEMPERATURE TEST////////////////////////////////
     
-    ble_InitUART();
+    Uart_Init();
     
     while(1)
     {
       ///////////////////////////FOR TEST PURPOSE///////////////////////////////////////////////////
       DevID = 0u;                                                                                ///
       eResult = ReadRegister(ID_REG, &DevID);                                                    ///
-      DEBUG_RESULT("Failed to read ID register",eResult,ADI_I2C_SUCCESS);                      ///
+      DEBUG_RESULT("Failed to read ID register",eResult,ADI_I2C_SUCCESS);                        ///
                                                                                                  ///
       /* Read the temperature MSB register */                                                    ///
         eResult = ReadRegister(TEMPREG_MSB, &t_msb);                                             ///
@@ -288,9 +290,9 @@ int main(void)
         
         
         sprintf(BLE_Payload, "Temperature is: %f\n", ctemp);
-        ble_PRINT_C(BLE_Payload);
+        Uart_ReadWrite("TmpSTING\n");
         Delay_ms(500);
         
     }
-    ble_CloseUart(hUartDevice);
+    Uart_Close();
 }

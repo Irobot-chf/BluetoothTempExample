@@ -1926,12 +1926,21 @@
     <name>BLE Library</name>
     <file>
       <name>$PROJ_DIR$\..\..\BLE.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Ble_adi_specific.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\uart_handler.h</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
     </file>
   </group>
   <group>
@@ -2019,6 +2028,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\uart_command_handler.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
     </file>
   </group>
   <group>
@@ -2031,9 +2043,6 @@
     <name>WIP</name>
     <file>
       <name>$PROJ_DIR$\..\..\Communications.c</name>
-      <excluded>
-        <configuration>Debug</configuration>
-      </excluded>
     </file>
   </group>
   <file>
