@@ -60,7 +60,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "common.h"
 #include "temperature_sensor.h"
 #include "uart_handler.h"
-#include "dialog14580.h"
+#include "BLE_Module.h"
 //#include "BLE.h"
 #include <string.h>
 #include "Communications.h"
@@ -228,7 +228,7 @@ int main(void)
     adi_gpio_OutputEnable(ADI_GPIO_PORT0, (ADI_GPIO_PIN_4 | ADI_GPIO_PIN_5), true);//I2C to ADT7400///////////////////////////FOR TEST PURPOSE///////////////////////////////////////
     
     //BOOT BLE MODULE
-    if(adi_Dialog14580_SPI_Boot(BLE_BINARY, IMAGE_SIZE) != 0)
+    if(Ble_Spi_Boot(BLE_BINARY, IMAGE_SIZE) != 0)
     DEBUG_MESSAGE("Dialog14580 failed to boot\n");
     
     ///////////////////////////FOR TEST PURPOSE///////////////////////////////////////

@@ -21,7 +21,7 @@ static ADI_SPI_TRANSCEIVER transceive;//transceive struct for SPI Read/Writes
 
 
 /********************************************************************
-* UART Interrupt calback                                            *
+* UART Interrupt callback                                            *
 *********************************************************************/
 void UARTCallback( void *pAppHandle, uint32_t nEvent, void *pArg)
 {
@@ -77,6 +77,10 @@ unsigned char Uart_Init(void)
                           UART_DIV_M_115200,
                           UART_DIV_N_115200,
                           UART_OSR_115200);
+	
+	//register callback
+  adi_uart_RegisterCallback(hUartDevice,UARTCallback,hUartDevice);
+		
   if(eUartResult != ADI_UART_SUCCESS)
     return 1;
   else
@@ -129,12 +133,6 @@ unsigned char Uart_ReadWrite(char *string)
   //length of string
   int16_t size_l = 0; 
   size_l = strlen(string);
-  
-  //parse string to TxBuffer for submitting
-  for(int i = 0; i < size_l; i++) // parse string to Tx buffer
-  {
-    TxBuffer[i] = string[i];// = string[i];  //TODO: Possible parsing error. 4th char transfers all remaining chars. 2nd char not transfered on UART
-  }
 
   //'empty' RxBuffer using NULL char
   RxBuffer[0] = '\0';
