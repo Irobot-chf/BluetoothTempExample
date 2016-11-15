@@ -7,7 +7,6 @@
 
 uint8_t                 UartDeviceMem[UART_MEMORY_SIZE];//UART memory size
 ADI_UART_HANDLE         hUartDevice;//UART device handle
-unsigned char 	        TxBuffer[];//UART transmit buffer
 unsigned char 	        RxBuffer[];//UART receive buffer
 ADI_UART_RESULT         eUartResult;//UART error variable
 bool data_sent =        false;//UART data_sent flag
@@ -115,7 +114,7 @@ unsigned char Uart_Close(void)
 * Return Value : 0 = Success                                                                    
 *                1 = Failure (See eUartResult in debug mode for adi micro specific info)     
 **********************************************************************************************/
-unsigned char Uart_ReadWrite(char *string)
+unsigned char Uart_ReadWrite(char *TxBuffer)
 {
   //clear flags
   data_sent = false;
@@ -132,7 +131,7 @@ unsigned char Uart_ReadWrite(char *string)
   
   //length of string
   int16_t size_l = 0; 
-  size_l = strlen(string);
+  size_l = strlen(TxBuffer);
 
   //'empty' RxBuffer using NULL char
   RxBuffer[0] = '\0';
@@ -143,7 +142,7 @@ unsigned char Uart_ReadWrite(char *string)
     return 1;
   
   //submit TxBuffer for sending data
-  eUartResult = adi_uart_SubmitTxBuffer(hUartDevice, string, size_l);
+  eUartResult = adi_uart_SubmitTxBuffer(hUartDevice, TxBuffer, size_l);
   if(eUartResult != ADI_UART_SUCCESS)
     return 1;
   

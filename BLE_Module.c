@@ -57,10 +57,11 @@ uint32_t send_header(uint32_t length, uint8_t crc)
   spi_tx[1] = 0x50;//preamble
   spi_tx[2] = 0x00;//empty
   spi_tx[3] = length&0xFF;//length LSB
+  
   spi_rx[0] = 0x00;
   spi_rx[1] = 0x00;
   spi_rx[2] = 0x00;
- 	spi_rx[3] = 0x00;
+  spi_rx[3] = 0x00;
   
   
   Spi_ReadWrite(spi_tx, 4 , spi_rx,4 );

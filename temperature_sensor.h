@@ -34,6 +34,5 @@ to the terms of the associated Analog Devices License Agreement.
 
 /* Pin muxing */
 extern int32_t adi_initpinmux(void);
-void reinit_uart();
 
 #endif /* _TEMPERATURE_SENSOR_H_ */

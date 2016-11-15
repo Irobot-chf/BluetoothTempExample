@@ -2322,35 +2322,32 @@
     <file>
       <name>$PROJ_DIR$\..\..\Communications.c</name>
     </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\uart_handler.h</name>
-    </file>
   </group>
   <group>
     <name>BLE Source</name>
     <file>
-      <name>$PROJ_DIR$\..\..\ble_app_barebone_580.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\BLE_code.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\BLE_code_beacon.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\BLE_code_paired.h</name>
+      <name>$PROJ_DIR$\..\..\sps_device.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\sps_device_580.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\sps_device_580_convertedTest.h</name>
+      <name>$PROJ_DIR$\..\..\sps_device_580_Found.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\sps_device_dialog.h</name>
+      <name>$PROJ_DIR$\..\..\sps_device_580_SPI+UART.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\sps_device_test.h</name>
+      <name>$PROJ_DIR$\..\..\sps_device_580_SPI.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\sps_device_580_TEST.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\sps_device_580_Unmod.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\sps_device_580_UnmodRelease.h</name>
     </file>
   </group>
   <group>
@@ -2388,9 +2385,6 @@
     <file>
       <name>$PROJ_DIR$\..\..\temperature_sensor.c</name>
     </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\uart_command_handler.c</name>
-    </file>
   </group>
   <group>
     <name>System</name>
@@ -2398,9 +2392,6 @@
       <name>$PROJ_DIR$\..\pinMuxBLE.c</name>
     </file>
   </group>
-  <file>
-    <name>$PROJ_DIR$\..\..\DIALOG_SPI_M3025.c</name>
-  </file>
 </project>
 
 

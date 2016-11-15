@@ -59,9 +59,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <services/gpio/adi_gpio.h>
 #include "common.h"
 #include "temperature_sensor.h"
-#include "uart_handler.h"
 #include "BLE_Module.h"
-//#include "BLE.h"
 #include <string.h>
 #include "Communications.h"
 
@@ -70,7 +68,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "sps_device_dialog.h"
 //#include "BLE_code_beacon.h"
 
-#define BLE_BINARY sps_device_580_bin
+#define BLE_BINARY "sps_device_580_bin"
 
 /* Handle for UART device */
 #pragma data_alignment=4
@@ -295,5 +293,5 @@ int main(void)
         Delay_ms(500);
         
     }
-    Uart_Close();
+    
 }
